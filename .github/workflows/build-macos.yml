@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+env:
+  CCACHE_DIR: ${{ github.workspace }}/.ccache
+
 jobs:
   build-macos:
     runs-on: macos-latest
@@ -22,7 +25,15 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install qt@6 openssl cmake ninja create-dmg
+          brew install qt@6 openssl cmake ninja ccache create-dmg
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-ccache-${{ hashFiles('client/**/CMakeLists.txt', 'client/**/*.cmake') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
 
       - name: Configure
         run: |
@@ -30,6 +41,8 @@ jobs:
             -B build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6)"
 
       - name: Build
