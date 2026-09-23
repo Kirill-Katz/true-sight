@@ -2,6 +2,13 @@
 
 TrueSight is a C++ chat application with a Qt/QML desktop client and a C++ server backed by PostgreSQL.
 
+## Developer documentation
+
+- [Architecture, API behavior, database, security, and current limitations](docs/architecture.md)
+- [Build, local PostgreSQL, configuration, packaging, CI, and development workflow](docs/development.md)
+- [Signed message ordering v2](docs/message-protocol-v2.md)
+- [Share file format v1](docs/share-format-v1.md)
+
 ## Contributing: step by step
 
 You need a [GitHub account](https://github.com/signup) and [Git installed](https://git-scm.com/downloads). You do **not** need permission to push to this repository: you will make a copy (a *fork*) under your own GitHub account and propose your changes with a *pull request* (PR).
