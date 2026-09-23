@@ -1,10 +1,10 @@
 #include <boost/asio/awaitable.hpp>
-#include <boost/beast/http/message_fwd.hpp>
-#include <boost/beast/http/string_body_fwd.hpp>
 #include <boost/beast/websocket/impl/rfc6455.hpp>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 #include "controllers/conversations.hpp"
@@ -20,13 +20,28 @@
 #include "shared.hpp"
 #include "ws/ws.hpp"
 
-const std::size_t PORT = 8888;
-const std::string CONNECTION_STRING =
-    "host=127.0.0.1 "
-    "port=5432 "
-    "dbname=true_sight "
-    "user=true_sight "
-    "password=true_sight";
+std::string get_required_environment_variable(const char* name) {
+    const char* value = std::getenv(name);
+    if (value == nullptr || *value == '\0') {
+        throw std::runtime_error(
+            std::string("Required environment variable is missing: ") + name
+        );
+    }
+
+    return value;
+}
+
+std::size_t get_port() {
+    const std::string port = get_required_environment_variable("PORT");
+    std::size_t parsed_length = 0;
+    const unsigned long parsed_port = std::stoul(port, &parsed_length);
+
+    if (parsed_length != port.size() || parsed_port == 0 || parsed_port > 65535) {
+        throw std::runtime_error("PORT must be an integer between 1 and 65535");
+    }
+
+    return parsed_port;
+}
 
 
 asio::awaitable<void> handle_ws_upgrade(
@@ -123,14 +138,15 @@ asio::awaitable<void> session(
 asio::awaitable<void> listen(
     asio::io_context& io,
     Router& router,
-    WebSocket& ws
+    WebSocket& ws,
+    std::size_t port
 ) {
     tcp::acceptor acceptor(
         io,
-        tcp::endpoint(tcp::v4(), PORT)
+        tcp::endpoint(tcp::v4(), port)
     );
 
-    std::cout << "Listening on http://localhost:" << PORT << '\n';
+    std::cout << "Listening on port " << port << '\n';
     for (;;) {
         tcp::socket socket =
             co_await acceptor.async_accept(asio::use_awaitable);
@@ -146,7 +162,7 @@ asio::awaitable<void> listen(
 int main() {
     asio::io_context io;
     Database db{
-        CONNECTION_STRING,
+        get_required_environment_variable("DATABASE_URL"),
         4
     };
 
@@ -174,7 +190,7 @@ int main() {
 
     asio::co_spawn(
         io,
-        listen(io, router, ws),
+        listen(io, router, ws, get_port()),
         asio::detached
     );
 

@@ -1,5 +1,4 @@
 #include <boost/asio/awaitable.hpp>
-#include <boost/beast/http/string_body_fwd.hpp>
 
 #include "ws/ws.hpp"
 

@@ -3,7 +3,6 @@
 #include "ws/ws_session.hpp"
 
 #include <boost/asio/awaitable.hpp>
-#include <boost/beast/http/string_body_fwd.hpp>
 #include <unordered_map>
 
 class WebSocket {

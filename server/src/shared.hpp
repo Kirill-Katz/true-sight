@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/beast/http/string_body_fwd.hpp>
 #include <stdint.h>
 
 #include <boost/url.hpp>

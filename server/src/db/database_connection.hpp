@@ -10,7 +10,7 @@ class DatabaseConnection {
         {}
 
         pqxx::result exec(
-            std::string_view sql,
+            const std::string& sql,
             const pqxx::params& params
         );
 

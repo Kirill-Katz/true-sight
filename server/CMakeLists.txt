@@ -8,8 +8,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Boost REQUIRED COMPONENTS system json url)
-find_package(libpqxx REQUIRED)
 find_package(OpenSSL REQUIRED)
+
+find_package(libpqxx CONFIG QUIET)
+if(NOT libpqxx_FOUND)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBPQXX REQUIRED IMPORTED_TARGET libpqxx)
+endif()
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -27,10 +32,15 @@ target_link_libraries(TrueSightServer PRIVATE
     Boost::system
     Boost::json
     Boost::url
-    libpqxx::pqxx
     OpenSSL::SSL
     OpenSSL::Crypto
 )
+
+if(libpqxx_FOUND)
+    target_link_libraries(TrueSightServer PRIVATE libpqxx::pqxx)
+else()
+    target_link_libraries(TrueSightServer PRIVATE PkgConfig::LIBPQXX)
+endif()
 
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
